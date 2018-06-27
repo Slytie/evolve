@@ -1,65 +1,65 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed May 23 17:52:29 2018
+Created on Mon Jun 25 17:58:46 2018
 
-@author: Tyler
+@author: tylerclark
 """
-
 from scipy.special import factorial as fact
 import numpy as np
 import matplotlib.pyplot as plt
 
+def game(K,b,p,player,beta,alpha):
 
-def Lambda(l,k,n,m,Print=False):    
+    '''
+    This specifies the results of a two-player game
+    '''
+        
+    if player ==2:
+        return p+K*beta*b
+    if player ==1:
+        return p-K*b
+
+def Lambda(l,k,n,m,Print=False):
+    '''
+    '''
     p=choose(n-m,k-l)*choose(m,l)*fact(k)*fact(n-k)/(fact(n))
     if Print ==True:
         print(p,l,k,n,m)
     return p
 
 
-
 def choose(n,k):
+    '''
+    This function returns the combinations of choosing n out of k
+    '''
     return fact(n)/(fact(n-k)*fact(k))
 
+def binom(n,p,k):
+    '''
+    The probability calculation taken from the binomial distribution
+    '''
+    return choose(n,k)*p**k*(1-p)**(n-k)  
 
 
 
-def generate_distribution(n):
+
+def generate_distribution(H,n):
+    '''
+    This function takes in the number of genes n and the frequencies of the 
+    heterogeneous and homogeneous genes and outputs a distribution of 
+    macrostates
+    '''
     P=[]
-    #P.append(0.20)
-    #P.append(0.20)
-    #P.append(0.40)
-    #P.append(0.20)
-  
-    for i in range(0,int(np.around(n-len(P)))):
-        P.append(1/n)
-
-    
-
+    for i in range(0,n):
+        P.append(binom(n-1,H[0]+0.5*H[2],i))
+        
     return P
 
 
-
-
-def He(l,k,n,m):
-    Lam=0
-        
-    if l<=k and l<=m and m+k-2*l>=0 and n>=m+k-2*l:
-        
-        if l>=k+m-n:
-        
-            #Lam+=Lambda(l-s,k,n,m)*binom(k-l+s,p,s)
-            Lam+=Lambda(l,k,n,m)
-            
-    return Lam
-
-
-
-
-    
-
 def Lambda_dom(l,k,n,m,p,other_parent,epsilon,mark):
+    '''
+    '''
     Lam=0
     
 
@@ -86,29 +86,15 @@ def Lambda_dom(l,k,n,m,p,other_parent,epsilon,mark):
                     H[1]+=L2
                     H[2]+=L3
      
-    if epsilon != None or epsilon !=0:
+    if epsilon != None:
         Lam=Lam*(1+epsilon/(np.abs(other_parent-l)+0.01))
 
     return Lam,H
 
-
-
-def binom(n,p,k):
-    return choose(n,k)*p**k*(1-p)**(n-k)   
-    
-def generateP_distribution(H,n):
-    P=[]
-    for i in range(0,n):
-        P.append(binom(n-1,H[0]+0.5*H[2],i))
-        
-    return P
-        
-    
-    
-
-
 def Season(P,H,n,b,p,x,epsilon,beta,alpha):
-    P=generateP_distribution(H,n)
+    '''
+    '''
+    P=generate_distribution(H,n)
    
     
     d=0
@@ -164,53 +150,43 @@ def Season(P,H,n,b,p,x,epsilon,beta,alpha):
 
 
 
-                    
-def game(K,b,p,player,beta,alpha):
-    #alpha=[alpha*K,K]
+def many_seasons_meanVar(parms):
+    '''
+    '''
     
-    #if alpha!= None:
-     #   K+=np.random.randn()*alpha[0]+alpha[1]
-      #  K=K/2
-        
-        
-    if player ==2:
-        return p+K*beta*b
-    if player ==1:
-        return p-K*b
+    num_seasons=parms['num_seasons']
+    beta=parms['beta']
+    epsilon=parms['epsilon']
+    alpha=parms['alpha']
+    x=parms['x']
+    p=parms['p']
+    b=parms['b']
+    n=parms['n']
+    H=parms['H']
     
+    plot_distribution_season=parms['plot_dist_season']
+    plot_distribution_end=parms['plot_dist_end']
     
-
-def many_seasons_meanVar(H,n,b,p,x,num_seasons,beta,epsilon,alpha):
-    H_old=H
-    P=generate_distribution(n)
-    
-    P=generateP_distribution(H,n)
-    
-    plt.plot(np.linspace(0,b*len(P),len(P)),P,label=str(x))
+    plot_mean_var=parms['plot_mean_var']
+     
+    P=generate_distribution(H,n)
     
     mean_all=[]
     std_all=[]
-    plt.figure(1)
-    diff=0.1
     
     for i in range(0,num_seasons):
         
-        
-        beta1=np.random.randn()+beta
-                             
-        if i <8:
-            beta1=beta
-        
-        old_mean=np.mean(P)
+        if parms['rand_beta'][0] ==True:
+            
+            beta=np.random.randn()*parms['rand_beta'][1]+beta
 
         P,H=Season(P=P,H=H,n=n,b=b,p=p,x=x,epsilon=epsilon,beta=beta,alpha=alpha)
         
+        if plot_distribution_season ==True:
         
-        #plt.subplot(211)
-        
-        #plt.plot(np.linspace(0,b*len(P),len(P)),P,label=str(p))
-        #plt.show()
-        
+            plt.title('Distribution of Macrostates')
+            plt.plot(np.linspace(0,b*len(P),len(P)),P,label='Season= '+str(i))
+            
         
         mean=np.sum(P*np.linspace(0,len(P),len(P)))
         
@@ -218,68 +194,39 @@ def many_seasons_meanVar(H,n,b,p,x,num_seasons,beta,epsilon,alpha):
         std=np.std(P)
         std_all.append(std)
         
-        if i>4:
-            diff=mean-old_mean
+    if plot_distribution_season ==True:
+        plt.show()
+                
+    if plot_mean_var ==True:
         
-        if np.around(diff,3)==0:
-            i=num_seasons
-       
-    mean_all=np.asarray(mean_all)
-    #plt.subplot(212)
-    #plt.title(str(beta))
-    #plt.plot(np.linspace(0,len(mean_all),len(mean_all)),mean_all,label='x='+str(x)+'--beta:'+str(beta))
-    plt.title('H:'+str(H_old[0])+'-'+str(H_old[1])+'-'+str(H_old[2]))
-    #plt.show()
-   
-    #plt.show()
-    plt.plot(np.linspace(0,b*len(P),len(P)),P,label=str(x))
-    plt.show()
+            mean_all=np.asarray(mean_all)
+            plt.plot(np.linspace(0,len(mean_all),len(mean_all)),mean_all,label='x='+str(x)+'--beta:'+str(beta))
+        
+        
+     
+    if plot_distribution_end ==True:
+
+        plt.title('Macrostate distribution after '+str(num_seasons))
+        plt.plot(np.linspace(0,b*len(P),len(P)),P,label=str(x))
+        
            
     return mean, std
 
-for i in range(0,3):
-    if i>0:
-        plt.title('Varying the probability of gene recessivity')
-        plt.legend()
-        plt.show()
-    for j in range(0,10):
-        H=[0.2+j/10,0.8-j/10,0]
-        mean, std=many_seasons_meanVar(H=H,n=10,b=0.04,p=0.26,x=0.5,num_seasons=100,beta=1.2,epsilon=0,alpha=None)
+
+
+
+def explore(parms,var1,var2):
+    
+    for i in range(0,var1['steps']):
         
-
-''''
-Mean=[]
-Std=[]
-
-for i in range(1,10):  
-    
-    beta=i
-    mean, std=many_seasons_meanVar(P,n=len(P),b=0.05,p=0.3,x=0.48,num_seasons=50,beta=beta)
-    Mean.append(mean)
-    Std.append(std)
+        if i>0 and parms['plot_dist_end']==True or parms['plot_mean_var']==True:
+            plt.legend()
+            plt.show()
             
-    
-plt.subplot(211)
-plt.title('Mean')
-plt.plot(np.linspace(0,len(Mean),len(Mean)),Mean)
-
-plt.subplot(212)
-plt.title('Standard Deviation')
-plt.plot(np.linspace(0,len(Std),len(Std)),Std)
+        for j in range(0,var2['steps']):
+            parms[var1['var']]=i*var1['max']/var1['steps']+var1['min']
+            parms[var2['var']]=j*var2['max']/var2['steps']+var2['min']
+            mean, std=many_seasons_meanVar(parms)
             
-    
-    
-plt.show()
-    
-    
-    
-    #plt.show()
-    
-    
-
-   
-    
-#many_seasons(0.9,P)
-'''      
-
-    
+            
+            

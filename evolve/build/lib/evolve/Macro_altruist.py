@@ -181,12 +181,10 @@ def game(K,b,p,player,beta,alpha):
     
 
 def many_seasons_meanVar(H,n,b,p,x,num_seasons,beta,epsilon,alpha):
-    H_old=H
+    
     P=generate_distribution(n)
     
     P=generateP_distribution(H,n)
-    
-    plt.plot(np.linspace(0,b*len(P),len(P)),P,label=str(x))
     
     mean_all=[]
     std_all=[]
@@ -227,13 +225,12 @@ def many_seasons_meanVar(H,n,b,p,x,num_seasons,beta,epsilon,alpha):
     mean_all=np.asarray(mean_all)
     #plt.subplot(212)
     #plt.title(str(beta))
-    #plt.plot(np.linspace(0,len(mean_all),len(mean_all)),mean_all,label='x='+str(x)+'--beta:'+str(beta))
-    plt.title('H:'+str(H_old[0])+'-'+str(H_old[1])+'-'+str(H_old[2]))
+    plt.plot(np.linspace(0,len(mean_all),len(mean_all)),mean_all,label='x='+str(x)+'--beta:'+str(beta))
     #plt.show()
    
     #plt.show()
-    plt.plot(np.linspace(0,b*len(P),len(P)),P,label=str(x))
-    plt.show()
+    #plt.plot(np.linspace(0,b*len(P),len(P)),P,label=str(x))
+    #plt.show()
            
     return mean, std
 
@@ -242,9 +239,9 @@ for i in range(0,3):
         plt.title('Varying the probability of gene recessivity')
         plt.legend()
         plt.show()
-    for j in range(0,10):
-        H=[0.2+j/10,0.8-j/10,0]
-        mean, std=many_seasons_meanVar(H=H,n=10,b=0.04,p=0.26,x=0.5,num_seasons=100,beta=1.2,epsilon=0,alpha=None)
+    for j in range(0,5):
+        H=[0.2,0,0.8]
+        mean, std=many_seasons_meanVar(H=H,n=6,b=0.04,p=0.2,x=0.5,num_seasons=1000,beta=1.1,epsilon=0,alpha=None)
         
 
 ''''

@@ -1,0 +1,10 @@
+README.md
+setup.py
+src/evolve/Macro_altruist.py
+src/evolve/__init__.py
+src/evolve/generate.py
+src/evolve/run.py
+src/evolve.egg-info/PKG-INFO
+src/evolve.egg-info/SOURCES.txt
+src/evolve.egg-info/dependency_links.txt
+src/evolve.egg-info/top_level.txt
